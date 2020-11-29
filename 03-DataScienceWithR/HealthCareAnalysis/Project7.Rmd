@@ -1,0 +1,190 @@
+Project 7 Healthcare cost analysis
+
+
+```{r}
+install.packages(gdata)
+library (gdata)
+health=read.csv("1555054100_hospitalcosts - HospitalCosts.csv")
+health
+```
+
+```{r}
+str(health)
+summary(health)
+
+```
+
+
+```{r}
+#health$FEMALE = as.factor(health$FEMALE)
+#health$AGE = as.factor(health$AGE)
+#health$RACE = as.factor(health$RACE)
+
+#str(health)
+```
+
+
+1. To record the patient statistics, the agency wants to find the age category of people who frequently visit the hospital and has the maximum expenditure.
+
+
+
+```{r}
+hist(health$AGE)
+
+library(dplyr)
+
+arrange(group_by(health, AGE) %>%
+  summarise(count=n(),
+            sum=sum(TOTCHG)), desc(sum))
+```
+
+```{r}
+
+healthage = as.factor(health$AGE) 
+  which.max(summary(healthage))
+max(summary(healthage))
+
+which.max(tapply(health$TOTCHG,health$AGE,sum))
+max(tapply(health$TOTCHG,health$AGE,sum))
+
+```
+
+The age "0" (infant) category of children is a group who frequently visit the hospital (307 times).
+Max expenditures are in the group 0 (infant)- $678.118.
+
+
+```{r}
+
+library(ggplot2)
+ggplot(health, aes(x=healthage))+geom_bar()
+
+
+summary(healthage)
+```
+
+
+
+
+2. In order of severity of the diagnosis and treatments and to find out the expensive treatments, the agency wants to find the diagnosis-related group that has maximum hospitalization and expenditure.
+
+
+```{r}
+arrange(group_by(health, APRDRG) %>%
+  summarise(count=n(),
+            sum=sum(TOTCHG)), desc(sum))
+```
+
+
+
+```{r}
+
+which.max(summary(as.factor(health$APRDRG)))
+max(summary(as.factor(health$APRDRG)))
+#summary(as.factor(health$APRDRG))
+which.max(tapply(health$TOTCHG,health$APRDRG,sum))
+max(tapply(health$TOTCHG,health$APRDRG,sum))
+```
+
+
+```{r}
+attach(health)
+
+hist(APRDRG)
+```
+
+```{r}
+
+#group1=as.factor(health$APRDRG)
+#health = mutate(health, TOTCHG1 = TOTCHG/1000)
+#table2 = tapply(health$TOTCHG1,group1,sum)
+#barplot(table2)
+```
+
+3. To make sure that there is no malpractice, the agency needs to analyze if the race of the patient is related to the hospitalization costs.
+
+
+```{r}
+ggplot(health,aes(x=RACE, y=TOTCHG))+geom_point()
+ggplot(health,aes(x=RACE))+geom_bar()
+healthrace = as.factor(health$RACE)
+summary(healthrace)
+```
+
+```{r}
+
+health1 = na.omit(health)
+health_anova=aov(TOTCHG~as.factor(RACE), data=health1)
+summary(health_anova)
+
+```
+
+
+```{r}
+stripchart(TOTCHG~RACE, vertical = T, pch = 19, data = health1)
+analysis=lm(TOTCHG~RACE, data=health1)
+summary(analysis)
+anova(analysis)
+plot(analysis, which=2)
+sresids=rstandard(analysis)
+hist(sresids)
+
+
+```
+
+
+
+In H0 we assume that all patients from different race groups are treated equally and the same treatment and hospital costs are applied.
+Therefore:
+H0 - the means of the 6 race group are the equal. 
+H1  - not all of the means are equal
+
+P-value 0.943 is greater than 0.05 significant level so H0 can not be rejected. 
+It means that there is no relations between race of patient and the hospital costs.
+From the summary we can see that RACE 1 has the maximum patients 484 out 500. Also Normal Q-Q chart shows that our data has normal distribution on the beginning and at the end is very much skewed. It effects also Anova results.
+
+
+4. To properly utilize the costs, the agency has to analyze the severity of the hospital costs by age and gender for the proper allocation of resources.
+
+```{r}
+
+healthfemale = as.factor(health$FEMALE)
+ggplot(health,aes(x=healthfemale, y=TOTCHG))+geom_point()
+ggplot(health,aes(x=healthfemale))+geom_bar()
+  
+arrange(group_by(health, FEMALE) %>%
+  summarise(count=n(),
+            sum=sum(TOTCHG)), desc(sum))
+
+model1 = lm(TOTCHG~AGE + FEMALE, data=health1)
+summary(model1)
+```
+
+
+Age has a significant level and lowest p-value that means that Age has significant impact on hospital costs. It seems there is a  relationship between gender and costs too as Female has less p-value. Negative co-efficient in Female shows that female patients uncur less less costs than male. We can prove it also from the summary table. 
+
+
+5. Since the length of stay is the crucial factor for inpatients, the agency wants to find if the length of stay can be predicted from age, gender, and race.
+
+
+```{r}
+hist(health$LOS)
+boxplot(health$LOS)
+
+model2 = lm(LOS~AGE + FEMALE + RACE, data=health1)
+summary(model2)
+
+```
+
+The very high p-value means that there is no relationship between independent and dependent variables. Therefore we cannot predict  the length of stay from age, gender and race.
+
+6. To perform a complete analysis, the agency wants to find the variable that mainly affects hospital costs.
+
+```{r}
+
+model3 = lm(TOTCHG~ ., data=health1)
+summary(model3)
+```
+
+
+
+
