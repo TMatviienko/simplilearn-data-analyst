@@ -5,8 +5,8 @@ This Data Analyst Master’s program in collaboration with IBM will make you an 
 
 ## Courses
 
-### [Business Analytics with Excel](tree/main/01-BusinessAnalyticsWithExcel)
+### [Business Analytics with Excel](01-BusinessAnalyticsWithExcel)
 
-### [Tableau 10](tree/main/02-Tableau10)
+### [Tableau 10](02-Tableau10)
 
-### [Data Science with R](tree/main/03-DataScienceWithR)
+### [Data Science with R](03-DataScienceWithR)
